@@ -1,6 +1,6 @@
 # sub-gate
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/YOUR_GITHUB_USERNAME/sub-gate)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ygasaino1/sub-gate)
 
 A tiny Cloudflare Worker that sits in front of your proxy subscription link. Your apps subscribe to the
 gate; the gate fetches your real subscription, applies the **Fragment + Fingerprint** enhancement to every
