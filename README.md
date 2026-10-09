@@ -57,10 +57,33 @@ In the Cloudflare dashboard: Workers & Pages -> `sub-gate` -> Settings -> Domain
 domain**. `*.workers.dev` addresses are frequently filtered in some countries; a custom domain proxied by
 Cloudflare usually is not.
 
+### 5. Enable the link builder page
+
+The repo ships a small static site in [`docs/`](docs/). Turn it on once:
+
+1. Repo -> **Settings** -> **Pages**.
+2. Under **Build and deployment** -> **Source**, choose **Deploy from a branch**.
+3. Set **Branch** to `main` and the folder to `/docs`, then **Save**.
+4. After about a minute it is live at `https://YOUR_GITHUB_USERNAME.github.io/sub-gate/`.
+
+With the GitHub CLI instead:
+
+```bash
+gh api -X POST repos/YOUR_GITHUB_USERNAME/sub-gate/pages -f "source[branch]=main" -f "source[path]=/docs"
+```
+
+Tip: add the page to the repo's **About -> Website** field, and bookmark it on your phone. The page
+remembers your Worker address (not your token or subscription) on that device.
+
+The page is just a string builder, so a public site is fine. It never contacts your Worker or your provider.
+
 ## Use
 
-Build your link (the real subscription must be **URL-encoded**, because it has its own `?` and `&`).
-Easiest: open [`tools/link-builder.html`](tools/link-builder.html) locally in your browser, it runs offline.
+Build your link with the **link builder page** (mobile-friendly, English/Persian, runs entirely in your
+browser, nothing is sent or stored): `https://YOUR_GITHUB_USERNAME.github.io/sub-gate/`
+(see [Enable the link builder page](#enable-the-link-builder-page) below). It also generates a strong token for you.
+
+Or build it by hand. The real subscription must be **URL-encoded**, because it has its own `?` and `&`:
 
 ```
 https://gate.example.com/sub/<GATE_TOKEN>?u=https%3A%2F%2Fprovider.com%2Fsub%3Ftoken%3Dabc
@@ -116,8 +139,8 @@ npm run deploy                   # manual deploy with Wrangler
 
 ```
 src/index.js               the Worker
-test/gate.test.js          tests (mocked upstream)
-tools/link-builder.html    offline helper that builds the encoded link
+test/                      tests (Worker with a mocked upstream, and the page's link logic)
+docs/                      GitHub Pages site: the link builder (index.html, style.css, builder.js, app.js)
 wrangler.jsonc             Worker config
 .dev.vars.example          secrets the Deploy button prompts for
 package.json               scripts + descriptions shown during Deploy

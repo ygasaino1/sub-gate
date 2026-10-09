@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Build the link for your sub-gate Cloudflare Worker. Runs entirely in your browser.">
+<title>sub-gate link builder</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234338ca'/%3E%3Cpath d='M9 24V14a7 7 0 0 1 14 0v10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="currentColor"/>
+      <path d="M9 24V14a7 7 0 0 1 14 0v10" fill="none" stroke="var(--on-accent)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <span>sub-gate</span>
+  </div>
+  <div class="top-actions">
+    <button type="button" id="lang" class="chip-btn" aria-label="Language">فارسی</button>
+    <a class="chip-btn" data-repo-link href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 data-i18n="title">Build your gate link</h1>
+    <p class="lead" data-i18n="lead">Paste your subscription and get a link that always returns it enhanced with fragment + fingerprint.</p>
+    <p class="privacy">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6Z" fill="currentColor"/></svg>
+      <span data-i18n="privacy">Runs in your browser. Your token and subscription are never sent or stored.</span>
+    </p>
+  </section>
+
+  <form id="form" autocomplete="off" novalidate>
+
+    <!-- 1 · Gate -->
+    <section class="card">
+      <h2><span class="step">1</span><span data-i18n="s1">Your gate</span></h2>
+
+      <div class="field">
+        <label for="base" data-i18n="baseLabel">Worker address</label>
+        <input id="base" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="abc.com" dir="ltr">
+        <p class="help" data-i18n="baseHelp">The domain of your deployed sub-gate Worker.</p>
+      </div>
+
+      <div class="field">
+        <label for="token" data-i18n="tokenLabel">Gate token</label>
+        <div class="input-row">
+          <input id="token" type="password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••••••••••••" dir="ltr" autocomplete="new-password">
+          <button type="button" id="token-toggle" class="icon-btn" aria-label="Show token" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 5c-5 0-9 4.4-10 7 1 2.6 5 7 10 7s9-4.400 10-7c-1-2.600-5-7-10-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <p class="help"><span data-i18n="tokenHelp">Same value as GATE_TOKEN on your Worker. At least 16 characters.</span>
+          <button type="button" id="token-gen" class="link-btn" data-i18n="gen">Generate one</button></p>
+      </div>
+    </section>
+
+    <!-- 2 · Subscription -->
+    <section class="card">
+      <h2><span class="step">2</span><span data-i18n="s2">Your subscription</span></h2>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="subs" data-i18n="subsLabel">Subscription link(s)</label>
+          <button type="button" id="subs-paste" class="link-btn" data-i18n="paste">Paste</button>
+        </div>
+        <textarea id="subs" rows="4" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://provider.com/sub?token=…" dir="ltr"></textarea>
+        <p class="help"><span data-i18n="subsHelp">One link per line. Several links are merged.</span> <span id="subs-count" class="count" hidden></span></p>
+      </div>
+    </section>
+
+    <!-- 3 · Options -->
+    <section class="card">
+      <h2><span class="step">3</span><span data-i18n="s3">Options</span></h2>
+
+      <fieldset class="field">
+        <legend data-i18n="fpLabel">Fingerprint</legend>
+        <div class="seg seg-wrap" role="radiogroup">
+          <label><input type="radio" name="fp" value="default" checked><span data-i18n="fpDefault">Default</span></label>
+          <label><input type="radio" name="fp" value="chrome"><span>Chrome</span></label>
+          <label><input type="radio" name="fp" value="firefox"><span>Firefox</span></label>
+          <label><input type="radio" name="fp" value="safari"><span>Safari</span></label>
+          <label><input type="radio" name="fp" value="random"><span data-i18n="fpRandom">Random</span></label>
+          <label><input type="radio" name="fp" value="none"><span data-i18n="fpNone">Off</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend data-i18n="fmtLabel">Output</legend>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="format" value="base64" checked><span>Base64</span></label>
+          <label><input type="radio" name="format" value="plain"><span data-i18n="fmtPlain">Plain text</span></label>
+        </div>
+      </fieldset>
+
+      <details class="adv">
+        <summary data-i18n="adv">Advanced</summary>
+        <label class="switch">
+          <span><b data-i18n="fragLabel">TLS fragmentation</b> <code>fm</code><small data-i18n="fragHelp">Splits the TLS hello. Turn off if a config stops working.</small></span>
+          <input id="fragment" type="checkbox" checked>
+          <i aria-hidden="true"></i>
+        </label>
+        <label class="switch">
+          <span><b data-i18n="cipherLabel">Cipher suites</b> <code>cs</code><small data-i18n="cipherHelp">Sends a browser-like cipher list.</small></span>
+          <input id="cipher" type="checkbox" checked>
+          <i aria-hidden="true"></i>
+        </label>
+        <div class="field">
+          <label for="ech" data-i18n="echLabel">ECH (optional)</label>
+          <input id="ech" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="cloudflare-ech.com+udp://1.1.1.1" dir="ltr">
+          <p class="help" data-i18n="echHelp">Adds Encrypted Client Hello to TLS configs. Leave empty to skip.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- Result -->
+    <section class="card result" aria-live="polite">
+      <h2 data-i18n="resultTitle">Your link</h2>
+      <output id="link" class="link-box" dir="ltr" tabindex="0" data-i18n="resultEmpty">Fill in the steps above to see your link.</output>
+      <ul id="notes" class="notes"></ul>
+      <div class="actions">
+        <button type="button" id="btn-preview" class="btn secondary" data-i18n="preview" disabled>Preview</button>
+        <button type="button" id="btn-share" class="btn secondary" data-i18n="share" disabled hidden>Share</button>
+      </div>
+      <p class="help" data-i18n="resultTip">Paste this into your app's subscription URL field.</p>
+    </section>
+  </form>
+
+  <footer>
+    <p><span data-i18n="noGate">No gate yet?</span> <a data-deploy-link href="https://deploy.workers.cloudflare.com/" target="_blank" rel="noopener" data-i18n="deploy">Deploy your own in one click</a></p>
+  </footer>
+</main>
+
+<div class="dock">
+  <button type="button" id="copy" class="btn primary" disabled></button>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="builder.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
