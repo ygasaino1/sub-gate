@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sub-gate",
+  "main": "src/index.js",
+  "compatibility_date": "2025-01-01",
+  "workers_dev": true,
+  "observability": { "enabled": false }
+
+  // Optional defaults (plain variables). Secrets such as GATE_TOKEN do NOT go here.
+  // "vars": {
+  //   "FP": "unsafe",
+  //   "ECH": "cloudflare-ech.com+udp://1.1.1.1"
+  // }
+}

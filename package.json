@@ -1,0 +1,23 @@
+{
+  "name": "sub-gate",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker that proxies a proxy subscription link and returns it with Fragment + Fingerprint enhancements applied to every VLESS/Trojan config.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  },
+  "cloudflare": {
+    "bindings": {
+      "GATE_TOKEN": {
+        "description": "The password inside your subscription link. Use a **long random string** (32+ characters), for example the output of `openssl rand -hex 24`. Replace the placeholder, the Worker refuses to run with a short or placeholder value."
+      }
+    }
+  }
+}
