@@ -277,6 +277,34 @@ input:focus-visible, textarea:focus-visible { outline-offset: 0; border-color: v
 .actions { display: flex; gap: 10px; margin-block-start: 14px; }
 .actions .btn { flex: 1; }
 
+/* ---------- QR code ---------- */
+.qr-frame { display: grid; place-items: center; }
+/* The code is always dark-on-white, even in dark mode: scanners need the contrast. */
+.qr-canvas {
+  display: block;
+  max-inline-size: 100%;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  image-rendering: pixelated;
+}
+.qr-empty {
+  inline-size: 100%;
+  min-block-size: 160px;
+  margin: 0;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+.qr-empty.bad { color: var(--bad); border-color: var(--bad); }
+.warn-text { color: var(--warn); }
+
 /* ---------- buttons ---------- */
 .btn {
   display: inline-flex;

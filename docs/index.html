@@ -132,6 +132,20 @@
       </div>
       <p class="help" data-i18n="resultTip">Paste this into your app's subscription URL field.</p>
     </section>
+
+    <!-- QR code -->
+    <section class="card qr">
+      <h2 data-i18n="qrTitle">QR code</h2>
+      <div class="qr-frame">
+        <canvas id="qr-canvas" class="qr-canvas" role="img" hidden></canvas>
+        <p id="qr-empty" class="qr-empty" data-i18n="qrEmpty">Your QR code appears here once the link is ready.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="btn-qr-save" class="btn secondary" data-i18n="qrSave" disabled>Save image</button>
+      </div>
+      <p class="help" data-i18n="qrHelp">Scan it with your phone or proxy app to import the link on another device.</p>
+      <p class="help warn-text" data-i18n="qrWarn">The QR code contains your token. Don't share screenshots of it.</p>
+    </section>
   </form>
 
   <footer>
@@ -146,6 +160,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="builder.js"></script>
+<script src="qr.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

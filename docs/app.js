@@ -58,6 +58,13 @@
       'p.subs': 'Add at least one http(s) subscription link',
       'w.insecure': 'Your Worker address uses http. Use https.',
       'w.ignored': function (n) { return n + (n === 1 ? ' item ignored (not an http/https link)' : ' items ignored (not http/https links)'); },
+      qrTitle: 'QR code',
+      qrEmpty: 'Your QR code appears here once the link is ready.',
+      qrSave: 'Save image',
+      qrHelp: 'Scan it with your phone or proxy app to import the link on another device.',
+      qrWarn: "The QR code contains your token. Don't share screenshots of it.",
+      qrAlt: 'QR code of your link',
+      qrTooLong: 'This link is too long for a QR code. Use fewer subscription links.',
       langBtn: 'فارسی'
     },
     fa: {
@@ -111,6 +118,13 @@
       'p.subs': 'حداقل یک لینک اشتراک http(s) اضافه کنید',
       'w.insecure': 'آدرس ورکر با http است. از https استفاده کنید.',
       'w.ignored': function (n) { return n + ' مورد نادیده گرفته شد (لینک http/https نیست)'; },
+      qrTitle: 'کد QR',
+      qrEmpty: 'وقتی لینک آماده شد، کد QR اینجا نمایش داده می‌شود.',
+      qrSave: 'ذخیرهٔ تصویر',
+      qrHelp: 'با گوشی یا برنامهٔ پروکسی اسکنش کنید تا لینک روی دستگاه دیگر وارد شود.',
+      qrWarn: 'کد QR شامل توکن شماست. از آن اسکرین‌شات به اشتراک نگذارید.',
+      qrAlt: 'کد QR لینک شما',
+      qrTooLong: 'این لینک برای کد QR خیلی طولانی است. تعداد لینک‌های اشتراک را کمتر کنید.',
       langBtn: 'English'
     }
   };
@@ -147,6 +161,85 @@
 
   var current = { ready: false, link: '' };
   var copyTimer = null;
+
+  // ---------- QR code (generated locally by qr.js, never by an online service) ----------
+  var QUIET = 4; // quiet-zone modules on each side, as the QR spec requires
+  var qr = { link: '', matrix: null, tooLong: false };
+
+  function paintQR(canvas, matrix, scale) {
+    var n = matrix.size + QUIET * 2;
+    canvas.width = n * scale;
+    canvas.height = n * scale;
+    var c = canvas.getContext('2d');
+    c.fillStyle = '#ffffff';
+    c.fillRect(0, 0, canvas.width, canvas.height);
+    c.fillStyle = '#000000';
+    for (var y = 0; y < matrix.size; y++) {
+      for (var x = 0; x < matrix.size; x++) {
+        if (matrix.modules[y][x]) c.fillRect((x + QUIET) * scale, (y + QUIET) * scale, scale, scale);
+      }
+    }
+  }
+
+  // Draw at a whole number of device pixels per module so every module is crisp.
+  function drawQR() {
+    var canvas = $('qr-canvas');
+    var dpr = window.devicePixelRatio || 1;
+    var n = qr.matrix.size + QUIET * 2;
+    var avail = Math.min(320, canvas.parentNode.clientWidth || 280);
+    var scale = Math.max(1, Math.floor((avail * dpr) / n));
+    paintQR(canvas, qr.matrix, scale);
+    canvas.style.width = (n * scale) / dpr + 'px';
+    canvas.style.height = (n * scale) / dpr + 'px';
+  }
+
+  function updateQR(res) {
+    var canvas = $('qr-canvas');
+    var empty = $('qr-empty');
+    var save = $('btn-qr-save');
+
+    if (res.ready && qr.link !== res.link) {
+      qr.link = res.link;
+      qr.tooLong = false;
+      try {
+        qr.matrix = window.SubGateQR.encode(res.link, 'M');
+      } catch (e) {
+        qr.matrix = null;
+        qr.tooLong = true;
+      }
+    }
+    if (!res.ready) { qr.link = ''; qr.matrix = null; qr.tooLong = false; }
+
+    var show = !!qr.matrix;
+    canvas.hidden = !show;
+    empty.hidden = show;
+    save.disabled = !show;
+    if (show) {
+      canvas.setAttribute('aria-label', t('qrAlt'));
+      drawQR();
+    } else {
+      empty.textContent = qr.tooLong ? t('qrTooLong') : t('qrEmpty');
+      empty.classList.toggle('bad', qr.tooLong);
+    }
+  }
+
+  function onQrSave() {
+    if (!qr.matrix) return;
+    var off = document.createElement('canvas');
+    var n = qr.matrix.size + QUIET * 2;
+    paintQR(off, qr.matrix, Math.max(4, Math.ceil(1024 / n)));
+    off.toBlob(function (blob) {
+      if (!blob) return;
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'sub-gate-qr.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    }, 'image/png');
+  }
 
   // ---------- render ----------
   function problemField(code) {
@@ -188,6 +281,8 @@
     // actions
     $('btn-preview').disabled = !res.ready;
     $('btn-share').disabled = !res.ready;
+
+    updateQR(res);
 
     // primary button doubles as a "what's next" hint while not ready
     var copy = $('copy');
@@ -314,6 +409,12 @@
   $('copy').addEventListener('click', onCopy);
   $('btn-preview').addEventListener('click', onPreview);
   $('btn-share').addEventListener('click', onShare);
+  $('btn-qr-save').addEventListener('click', onQrSave);
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { if (qr.matrix) drawQR(); }, 120);
+  });
   $('token-gen').addEventListener('click', onGenerate);
   $('token-toggle').addEventListener('click', function () {
     var f = $('token');
